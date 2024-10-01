@@ -1,3 +1,5 @@
+import { RoleEntity } from '../../../database/entities/role.entity';
+
 export class RegisterUserDto {
 
   name: string;
@@ -13,7 +15,7 @@ export class RegisterUserDto {
 
 export class ResponseUserDto {
 
-  id: number;
+  id: string;
   name: string;
   surname: string;
   age: number;
@@ -22,5 +24,6 @@ export class ResponseUserDto {
   phone: string;
   state: string;
   gender: string;
+  roles: RoleEntity[];
 
 }

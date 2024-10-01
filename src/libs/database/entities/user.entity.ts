@@ -1,10 +1,11 @@
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, IsNull, JoinColumn, JoinTable, ManyToMany, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { RoleEntity } from './role.entity';
 
 @Entity('users')
 export class UserEntity {
 
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
   @Column()
   name: string;
   @Column()
@@ -23,6 +24,15 @@ export class UserEntity {
   state: string;
   @Column()
   gender: string;
+  @ManyToOne((type) => RoleEntity, {
+    cascade: true,
+  })
+  @JoinTable({
+    name: "users_roles",
+    joinColumn: { name: "user_id", referencedColumnName: "id" },
+    inverseJoinColumn: { name: "role_id" }
+  })
+  roles: RoleEntity[];
 
 
 }

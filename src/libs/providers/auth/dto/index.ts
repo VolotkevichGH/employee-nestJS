@@ -1,3 +1,4 @@
+import { RoleEntity } from '../../../database/entities/role.entity';
 
 export class SignInDto {
   email: string;
@@ -5,7 +6,7 @@ export class SignInDto {
 }
 
 export class ResponseProfileDto {
-  id: number;
+  id: string;
   name: string;
   surname: string;
   age: number;
@@ -14,6 +15,6 @@ export class ResponseProfileDto {
   phone: string;
   state: string;
   gender: string;
-
+  roles: RoleEntity[];
   access_token: string;
 }
