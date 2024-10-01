@@ -1,7 +1,9 @@
-import { Controller, Get, Param } from '@nestjs/common';
+import { Controller, Get, Param, UseGuards } from '@nestjs/common';
 import { UserService } from './user.service';
 import { Roles } from '../../../shared/src/decorators/roles.decorator';
 import { Role } from '../../../shared/src/enums/role.enum';
+import { AuthGuard } from '../../../shared/src/guards/auth.guard';
+import { RolesGuard } from '../../../shared/src/guards/roles.guard';
 
 @Controller('users')
 export class UserController {
@@ -12,8 +14,8 @@ export class UserController {
     const user = await this.userService.findById(id);
     return this.userService.getResponseDtoByUser(user);
   }
-
-  @Roles(Role.HR)
+  @UseGuards(RolesGuard)
+  @Roles(Role.Accountant, Role.HR)
   @Get()
   async getAll() {
     return this.userService.findAll();
