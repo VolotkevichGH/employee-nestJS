@@ -14,7 +14,7 @@ export class UserController {
     return this.userService.getResponseDtoByUser(user);
   }
 
-  @UseGuards(LocalAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Get()
   async getAll() {
     return this.userService.findAll();

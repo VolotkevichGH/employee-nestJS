@@ -41,7 +41,7 @@ export class UserService {
   }
 
   async findById(id: string) {
-    const user = this.userRepository.findOneBy({ id });
+    const user = await this.userRepository.findOneBy({ id });
     if (!user)
       throw new BadRequestException('User with this id does not exist!');
     return user;

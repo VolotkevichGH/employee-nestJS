@@ -9,11 +9,15 @@ import { LocalStrategy } from './strategyes/local.strategy';
 import { ConfigModule } from '@nestjs/config';
 import config from '../../../../app-main/configuration/config';
 import { JwtStrategy } from './strategyes/jwt.strategy';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { UserEntity } from '../../../database/src/entities/user.entity';
+import { Token } from '../../../database/src/entities/token.entity';
 
 @Module({
   imports: [
     UserModule,
     PassportModule,
+    TypeOrmModule.forFeature([Token]),
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: '.env',

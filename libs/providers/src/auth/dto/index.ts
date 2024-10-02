@@ -1,4 +1,5 @@
 import { RoleEntity } from '../../../../database/src/entities/role.entity';
+import { Tokens } from '../../../../shared/src/interfaces/tokens.interface';
 
 export class SignInDto {
   email: string;
@@ -15,6 +16,6 @@ export class ResponseProfileDto {
   phone: string;
   state: string;
   gender: string;
-  access_token: string;
   roles: RoleEntity[];
+  tokens: Tokens;
 }
