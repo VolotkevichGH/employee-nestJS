@@ -1,8 +1,8 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { RegisterUserDto, ResponseUserDto } from './dto';
-import { InjectRepository } from '@nestjs/typeorm';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { UserEntity } from '../../../database/src/entities/user.entity';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import * as crypto from 'node:crypto';
 import { RoleService } from '../role/role.service';
 import { Role } from '../../../shared/src/enums/role.enum';
@@ -13,6 +13,7 @@ export class UserService {
     @InjectRepository(UserEntity)
     private readonly userRepository: Repository<UserEntity>,
     private readonly roleService: RoleService,
+    @InjectDataSource() private readonly dataSource: DataSource,
   ) {}
 
   async create(dto: RegisterUserDto): Promise<UserEntity> {
@@ -36,8 +37,9 @@ export class UserService {
     }
     return res;
   }
+
   async findByEmail(email: string) {
-    return this.userRepository.findOneBy({ email });
+    return await this.userRepository.findOneBy({ email });
   }
 
   async findById(id: string) {
@@ -47,7 +49,8 @@ export class UserService {
     return user;
   }
 
-  getResponseDtoByUser(user: UserEntity): ResponseUserDto {
+  async getResponseDtoByUser(user: UserEntity): Promise<ResponseUserDto> {
+    const roles = await this.findRolesByUserId(user.id);
     const dto = new ResponseUserDto();
     dto.id = user.id;
     dto.name = user.name;
@@ -58,7 +61,20 @@ export class UserService {
     dto.state = user.state;
     dto.gender = user.gender;
     dto.address = user.address;
-    dto.roles = user.roles;
+    dto.roles = roles;
     return dto;
+  }
+
+  async findRolesByUserId(userId: string) {
+    const query = `SELECT role_id
+                   FROM users_roles
+                   where CAST(user_id as text) ILIKE '${userId}'`;
+    const res = await this.dataSource.query(query);
+    const roles: Role[] = [];
+    for (const role of res) {
+      const roleEntity = await this.roleService.findById(role.role_id);
+      roles.push(roleEntity.title);
+    }
+    return roles;
   }
 }

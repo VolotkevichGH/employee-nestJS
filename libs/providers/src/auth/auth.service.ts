@@ -15,7 +15,6 @@ import { v4 } from 'uuid';
 import * as dayjs from 'dayjs';
 import { Tokens } from '../../../shared/src/interfaces/tokens.interface';
 import { JWTPayload } from '../../../shared/src/interfaces/jwt-payload.interface';
-import { Role } from 'libs/shared/src/enums/role.enum';
 
 @Injectable()
 export class AuthService {
@@ -42,13 +41,13 @@ export class AuthService {
     return this.getProfileDtoByUser(user, tokens);
   }
 
-  getProfileDtoByUser(user: UserEntity, tokens: Tokens): ResponseProfileDto {
+  async getProfileDtoByUser(
+    user: UserEntity,
+    tokens: Tokens,
+  ): Promise<ResponseProfileDto> {
     const { password, roles, ...res } = user;
-    let finalRoles: Role[] = [];
-    for (const role of roles) {
-      finalRoles.push(role.title);
-    }
-    return { ...res, roles: finalRoles, tokens};
+    const role = await this.userService.findRolesByUserId(user.id);
+    return { ...res, roles: role, tokens };
   }
 
   async validateUser(email: string, pass: string) {
@@ -90,18 +89,15 @@ export class AuthService {
   }
 
   private async generateTokens(user: UserEntity): Promise<Tokens> {
-    const payload = this.getJwtPayloadByUser(user);
+    const payload = await this.getJwtPayloadByUser(user);
     const access_token = this.jwtService.sign(payload);
     const refresh_token = await this.generateRefreshToken(user.id);
     return { access_token, refresh_token };
   }
 
-  getJwtPayloadByUser(user: UserEntity): JWTPayload {
+  async getJwtPayloadByUser(user: UserEntity): Promise<JWTPayload> {
     const { password, roles, ...result } = user;
-    let finalRoles: Role[] = [];
-    for (const role of roles) {
-      finalRoles.push(role.title);
-    }
-    return { ...result, roles: finalRoles };
+    const role = await this.userService.findRolesByUserId(user.id);
+    return { ...result, roles: role };
   }
 }

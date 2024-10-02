@@ -1,5 +1,5 @@
-import { RoleEntity } from '../../../../database/src/entities/role.entity';
 import { Tokens } from '../../../../shared/src/interfaces/tokens.interface';
+import { RoleEntity } from '../../../../database/src/entities/role.entity';
 import { Role } from '../../../../shared/src/enums/role.enum';
 
 export class SignInDto {

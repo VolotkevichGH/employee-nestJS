@@ -10,14 +10,15 @@ export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @UseGuards(JwtAuthGuard)
-  @Get('/:id')
+  @Roles([Role.HR])
+  @Get(':id')
   async getById(@Param('id') id: string) {
     const user = await this.userService.findById(id);
     return this.userService.getResponseDtoByUser(user);
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles([Role.Accountant])
+  @Roles([Role.HR])
   @Get()
   async getAll() {
     return this.userService.findAll();

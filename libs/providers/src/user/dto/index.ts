@@ -1,4 +1,5 @@
 import { RoleEntity } from '../../../../database/src/entities/role.entity';
+import { Role } from '../../../../shared/src/enums/role.enum';
 
 export class RegisterUserDto {
 
@@ -24,6 +25,6 @@ export class ResponseUserDto {
   phone: string;
   state: string;
   gender: string;
-  roles: RoleEntity[];
+  roles: Role[];
 
 }

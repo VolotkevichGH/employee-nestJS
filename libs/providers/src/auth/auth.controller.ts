@@ -4,7 +4,6 @@ import {
   Get,
   HttpStatus,
   Post,
-  Req,
   Res,
   UnauthorizedException,
   UseGuards,
@@ -13,7 +12,7 @@ import { AuthService } from './auth.service';
 import { RegisterUserDto, ResponseUserDto } from '../user/dto';
 import { ResponseProfileDto, SignInDto } from './dto';
 import { JwtAuthGuard } from '../../../shared/src/guards/jwt.auth.guard';
-import { Response, Request } from 'express';
+import { Response } from 'express';
 import { Cookie } from '../../../shared/src/decorators/cookies.decorator';
 import { UserService } from '../user/user.service';
 import { CurrentUser } from '../../../shared/src/decorators/current-user.decorator';
@@ -36,9 +35,9 @@ export class AuthController {
   }
 
   @Post('login')
-  async login(@Body() dto: SignInDto, @Res() res: Response){
+  async login(@Body() dto: SignInDto, @Res() res: Response) {
     const result = await this.authService.login(dto);
-    this.setBearerTokenInHeader(res, result);
+    console.log(await this.userService.findRolesByUserId(result.id));
     this.setRefreshTokenToCookies(res, result);
   }
 
@@ -48,6 +47,7 @@ export class AuthController {
     return user;
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get('refresh-token')
   async refreshToken(
     @Cookie(REFRESH_TOKEN) refreshToken: string,
@@ -57,7 +57,7 @@ export class AuthController {
     const tokens = await this.authService.refreshTokens(refreshToken);
     if (!tokens) throw new UnauthorizedException();
     const user = await this.userService.findById(tokens.refresh_token.userId);
-    const dto = this.authService.getProfileDtoByUser(user, tokens);
+    const dto = await this.authService.getProfileDtoByUser(user, tokens);
     this.setRefreshTokenToCookies(res, dto);
   }
 
@@ -73,7 +73,6 @@ export class AuthController {
       secure: false,
       expires: new Date(),
     });
-    res.cookie('Authorization', ``)
     res.status(HttpStatus.OK).send(true);
   }
 
@@ -87,11 +86,5 @@ export class AuthController {
       path: '/',
     });
     res.status(HttpStatus.CREATED).json(dto);
-  }
-
-
-  private setBearerTokenInHeader(res: Response, dto: ResponseProfileDto) {
-    if (!dto.tokens) throw new UnauthorizedException();
-    res.header('Authorization', `Bearer ${dto.tokens.access_token}`)
   }
 }

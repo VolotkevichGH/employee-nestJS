@@ -27,7 +27,7 @@ export class RolesGuard implements CanActivate {
     let hasRole = false;
     for (const role of userRoles) {
       for (const roleR of roles) {
-        if (role.title === roleR) {
+        if (role === roleR) {
           hasRole = true;
         }
       }

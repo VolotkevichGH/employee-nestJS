@@ -1,4 +1,3 @@
-import { RoleEntity } from '../../../database/src/entities/role.entity';
 import { Role } from '../enums/role.enum';
 
 export interface JWTPayload {
