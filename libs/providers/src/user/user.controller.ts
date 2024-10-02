@@ -1,7 +1,9 @@
 import { Controller, Get, Param, UseGuards } from '@nestjs/common';
 import { UserService } from './user.service';
-import { LocalAuthGuard } from '../../../shared/src/guards/local.auth.guard';
 import { JwtAuthGuard } from '../../../shared/src/guards/jwt.auth.guard';
+import { Roles } from '../../../shared/src/decorators/roles.decorator';
+import { Role } from '../../../shared/src/enums/role.enum';
+import { RolesGuard } from '../../../shared/src/guards/roles.guard';
 
 @Controller('users')
 export class UserController {
@@ -14,7 +16,8 @@ export class UserController {
     return this.userService.getResponseDtoByUser(user);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles([Role.Accountant])
   @Get()
   async getAll() {
     return this.userService.findAll();

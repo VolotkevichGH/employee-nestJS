@@ -1,5 +1,6 @@
 import { RoleEntity } from '../../../../database/src/entities/role.entity';
 import { Tokens } from '../../../../shared/src/interfaces/tokens.interface';
+import { Role } from '../../../../shared/src/enums/role.enum';
 
 export class SignInDto {
   email: string;
@@ -16,6 +17,6 @@ export class ResponseProfileDto {
   phone: string;
   state: string;
   gender: string;
-  roles: RoleEntity[];
+  roles: Role[];
   tokens: Tokens;
 }

@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { UserService } from '../user/user.service';
 import { RegisterUserDto, ResponseUserDto } from '../user/dto';
 import { JwtService } from '@nestjs/jwt';
@@ -10,6 +14,8 @@ import { Repository } from 'typeorm';
 import { v4 } from 'uuid';
 import * as dayjs from 'dayjs';
 import { Tokens } from '../../../shared/src/interfaces/tokens.interface';
+import { JWTPayload } from '../../../shared/src/interfaces/jwt-payload.interface';
+import { Role } from 'libs/shared/src/enums/role.enum';
 
 @Injectable()
 export class AuthService {
@@ -25,26 +31,30 @@ export class AuthService {
     return this.userService.getResponseDtoByUser(user);
   }
 
-  async login(dto: SignInDto, agent: string): Promise<ResponseProfileDto> {
+  async login(dto: SignInDto): Promise<ResponseProfileDto> {
     const user = await this.userService.findByEmail(dto.email);
     if (!user)
       throw new BadRequestException('User with this email is not registered!');
     const userInfo = this.validateUser(dto.email, dto.password);
-    if (userInfo === null) throw new UnauthorizedException('Email or password is invalid!');
+    if (userInfo === null)
+      throw new UnauthorizedException('Email or password is invalid!');
     const tokens = await this.generateTokens(user);
     return this.getProfileDtoByUser(user, tokens);
   }
 
   getProfileDtoByUser(user: UserEntity, tokens: Tokens): ResponseProfileDto {
     const { password, roles, ...res } = user;
-    return { ...res, tokens, roles };
+    let finalRoles: Role[] = [];
+    for (const role of roles) {
+      finalRoles.push(role.title);
+    }
+    return { ...res, roles: finalRoles, tokens};
   }
 
   async validateUser(email: string, pass: string) {
     const user = await this.userService.findByEmail(email);
     if (user && user.password === pass) {
-      const { password, ...result } = user;
-      return result;
+      return this.getJwtPayloadByUser(user);
     }
     return null;
   }
@@ -54,11 +64,11 @@ export class AuthService {
     return this.tokenRepository.save({
       token: v4(),
       exp: expDate,
-      userId: userId
+      userId: userId,
     });
   }
 
-  async refreshTokens(refreshToken: string,): Promise<Tokens> {
+  async refreshTokens(refreshToken: string): Promise<Tokens> {
     const token = await this.tokenRepository.findOne({
       where: { token: refreshToken },
     });
@@ -73,10 +83,25 @@ export class AuthService {
     return this.generateTokens(user);
   }
 
+  async deleteRefreshToken(token: string) {
+    return this.tokenRepository.delete({
+      token: token,
+    });
+  }
+
   private async generateTokens(user: UserEntity): Promise<Tokens> {
-    const { password, ...result } = user;
-    const access_token = this.jwtService.sign({ ...result });
+    const payload = this.getJwtPayloadByUser(user);
+    const access_token = this.jwtService.sign(payload);
     const refresh_token = await this.generateRefreshToken(user.id);
     return { access_token, refresh_token };
+  }
+
+  getJwtPayloadByUser(user: UserEntity): JWTPayload {
+    const { password, roles, ...result } = user;
+    let finalRoles: Role[] = [];
+    for (const role of roles) {
+      finalRoles.push(role.title);
+    }
+    return { ...result, roles: finalRoles };
   }
 }
