@@ -1,12 +1,14 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { Roles } from '../decorators/roles.decorator';
+import { UserService } from '../../../providers/src/user/user.service';
 
 @Injectable()
 export class RolesGuard implements CanActivate {
-  constructor(private reflector: Reflector) {}
+  constructor(private reflector: Reflector,
+              private readonly userService: UserService,) {}
 
-  canActivate(context: ExecutionContext): boolean {
+  async canActivate(context: ExecutionContext): Promise<boolean> {
     const roles = this.reflector.get(Roles, context.getHandler());
     if (!roles) {
       return true;
@@ -20,16 +22,12 @@ export class RolesGuard implements CanActivate {
       return false;
     }
 
-    const userRoles = user.roles;
-    console.log(`User role: ${userRoles}`);
-    console.log(`Required roles: ${roles}`);
-
     let hasRole = false;
-    for (const role of userRoles) {
-      for (const roleR of roles) {
-        if (role === roleR) {
-          hasRole = true;
-        }
+
+    for (const role of roles) {
+      if (await this.userService.validateRole(user.id, role)){
+        hasRole = true;
+        break;
       }
     }
 

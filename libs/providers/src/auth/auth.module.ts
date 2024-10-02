@@ -12,11 +12,13 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Token } from '../../../database/src/entities/token.entity';
 import { JwtAuthGuard } from '../../../shared/src/guards/jwt.auth.guard';
 import { RolesGuard } from '../../../shared/src/guards/roles.guard';
+import { RoleModule } from '../role/role.module';
 
 @Module({
   imports: [
     UserModule,
     PassportModule,
+    RoleModule,
     TypeOrmModule.forFeature([Token]),
     ConfigModule.forRoot({
       isGlobal: true,

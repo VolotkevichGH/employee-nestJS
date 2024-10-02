@@ -17,6 +17,8 @@ import { Cookie } from '../../../shared/src/decorators/cookies.decorator';
 import { UserService } from '../user/user.service';
 import { CurrentUser } from '../../../shared/src/decorators/current-user.decorator';
 import { JWTPayload } from '../../../shared/src/interfaces/jwt-payload.interface';
+import { RoleService } from '../role/role.service';
+import { Role } from '../../../shared/src/enums/role.enum';
 
 const REFRESH_TOKEN = 'refresh_token';
 
@@ -25,6 +27,7 @@ export class AuthController {
   constructor(
     private readonly authService: AuthService,
     private readonly userService: UserService,
+    private readonly roleService: RoleService,
   ) {}
 
   @Post('register')
@@ -37,7 +40,6 @@ export class AuthController {
   @Post('login')
   async login(@Body() dto: SignInDto, @Res() res: Response) {
     const result = await this.authService.login(dto);
-    console.log(await this.userService.findRolesByUserId(result.id));
     this.setRefreshTokenToCookies(res, result);
   }
 

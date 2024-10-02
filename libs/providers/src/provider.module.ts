@@ -3,6 +3,7 @@ import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
 import { RoleModule } from './role/role.module';
 import { ConfigModule } from '@nestjs/config';
+import { HrModule } from './hr/hr.module';
 import config from '../../../app-main/configuration/config';
 
 @Module({
@@ -15,6 +16,7 @@ import config from '../../../app-main/configuration/config';
       envFilePath: '.env',
       load: [config],
     }),
+    HrModule,
   ],
 })
 export class ProviderModule {}
