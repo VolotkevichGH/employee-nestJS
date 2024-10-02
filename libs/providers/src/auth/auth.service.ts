@@ -1,10 +1,11 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { UserService } from '../user/user.service';
 import { RegisterUserDto, ResponseUserDto } from '../user/dto';
 import * as crypto from 'node:crypto';
 import { JwtService } from '@nestjs/jwt';
 import { ResponseProfileDto, SignInDto } from './dto';
 import { UserEntity } from '../../../database/src/entities/user.entity';
+import e from 'express';
 
 @Injectable()
 export class AuthService {
@@ -18,23 +19,18 @@ export class AuthService {
     return this.userService.getResponseDtoByUser(user);
   }
 
-  async signIn(dto: SignInDto): Promise<ResponseProfileDto> {
-    const user = await this.userService.findByEmail(dto.email);
-    const verifyPassword = crypto
-      .createHash('sha256')
-      .update(dto.password)
-      .digest('hex');
-    if (verifyPassword !== user?.password) {
-      throw new UnauthorizedException();
-    }
-    const payload = { user: user };
-    const accessToken = this.jwtService.sign(payload);
-
-    return this.getProfileDtoByUser(user, accessToken);
+  async login(email: string, password: string): Promise<ResponseUserDto> {
+    const user = await this.userService.findByEmail(email);
+    if (!user) throw new BadRequestException('User with this email is not registered!');
+    const userInfo = this.validateUser(email, password);
+    const payload = { userInfo };
+    const access_token = this.jwtService.sign(payload);
+    return this.getProfileDtoByUser(user, access_token);
   }
 
 
   getProfileDtoByUser(user: UserEntity, token: string): ResponseProfileDto {
+    const roles = user.roles;
     const dto = new ResponseProfileDto();
     dto.id = user.id;
     dto.name = user.name;
@@ -45,13 +41,18 @@ export class AuthService {
     dto.state = user.state;
     dto.gender = user.gender;
     dto.address = user.address;
-    dto.roles = user.roles;
+    dto.roles = roles;
     dto.access_token = token;
     return dto;
   }
 
-  getUserByToken(token: string) {
-
+  async validateUser(email: string, pass: string) {
+    const user = await this.userService.findByEmail(email);
+    if (user && user.password === pass) {
+      const { password, ...result } = user;
+      return result;
+    }
+    return null;
   }
 
 }

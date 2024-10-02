@@ -9,7 +9,8 @@ import {
 import { AuthService } from './auth.service';
 import { RegisterUserDto, ResponseUserDto } from '../user/dto';
 import { ResponseProfileDto, SignInDto } from './dto';
-import { AuthGuard } from '../../../shared/src/guards/auth.guard';
+import { LocalAuthGuard } from '../../../shared/src/guards/local.auth.guard';
+import { JwtAuthGuard } from '../../../shared/src/guards/jwt.auth.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -23,13 +24,15 @@ export class AuthController {
   }
 
   @Post('login')
-  signIn(@Body() signInDto: SignInDto): Promise<ResponseProfileDto> {
-    return this.authService.signIn(signInDto);
+  async login(email:string, password: string): Promise<ResponseUserDto> {
+
+    return this.authService.login(email, password);
   }
 
-  @UseGuards(AuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Get('profile')
-  getProfile(@Request() req): ResponseProfileDto {
-    return this.authService.getProfileDtoByUser(req.user, req.headers.authorization);
+  getProfile(@Request() req) {
+    console.log(req.user);
+    return req.user;
   }
 }

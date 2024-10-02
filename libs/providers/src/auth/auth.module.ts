@@ -4,13 +4,21 @@ import { AuthController } from './auth.controller';
 import { UserModule } from '../user/user.module';
 import { JwtModule } from '@nestjs/jwt';
 import { jwtConstants } from '../../../shared/src/constants/constants';
-import * as process from 'node:process';
-import { APP_GUARD } from '@nestjs/core';
-import { AuthGuard } from '../../../shared/src/guards/auth.guard';
+import { PassportModule } from '@nestjs/passport';
+import { LocalStrategy } from './strategyes/local.strategy';
+import { ConfigModule } from '@nestjs/config';
+import config from '../../../../app-main/configuration/config';
+import { JwtStrategy } from './strategyes/jwt.strategy';
 
 @Module({
   imports: [
     UserModule,
+    PassportModule,
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: '.env',
+      load: [config],
+    }),
     JwtModule.register({
       global: true,
       secret: jwtConstants.secret,
@@ -18,7 +26,7 @@ import { AuthGuard } from '../../../shared/src/guards/auth.guard';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService],
+  providers: [AuthService, LocalStrategy, JwtStrategy],
   exports: [AuthService],
 })
 export class AuthModule {}
