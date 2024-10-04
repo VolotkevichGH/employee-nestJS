@@ -12,13 +12,13 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Token } from '../../../database/src/entities/token.entity';
 import { JwtAuthGuard } from '../../../shared/src/guards/jwt.auth.guard';
 import { RolesGuard } from '../../../shared/src/guards/roles.guard';
-import { RoleModule } from '../role/role.module';
+import { GoogleStrategy } from './strategies/google.strategy';
+import { GoogleGuard } from '../../../shared/src/guards/google.guard';
 
 @Module({
   imports: [
     UserModule,
     PassportModule,
-    RoleModule,
     TypeOrmModule.forFeature([Token]),
     ConfigModule.forRoot({
       isGlobal: true,
@@ -32,7 +32,14 @@ import { RoleModule } from '../role/role.module';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy, JwtAuthGuard, RolesGuard],
+  providers: [
+    AuthService,
+    JwtStrategy,
+    JwtAuthGuard,
+    RolesGuard,
+    GoogleStrategy,
+    GoogleGuard,
+  ],
   exports: [AuthService],
 })
 export class AuthModule {}

@@ -9,7 +9,7 @@ import { RolesGuard } from '../../../shared/src/guards/roles.guard';
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles([Role.HR])
   @Get(':id')
   async getById(@Param('id') id: string) {

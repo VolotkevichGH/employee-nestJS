@@ -10,13 +10,13 @@ import config from '../../../app-main/configuration/config';
   imports: [
     AuthModule,
     UserModule,
+    HrModule,
     RoleModule,
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: '.env',
+      envFilePath: '../../../.env',
       load: [config],
     }),
-    HrModule,
   ],
 })
 export class ProviderModule {}

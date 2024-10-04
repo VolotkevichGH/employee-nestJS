@@ -4,6 +4,7 @@ import {
   Get,
   HttpStatus,
   Post,
+  Req,
   Res,
   UnauthorizedException,
   UseGuards,
@@ -12,13 +13,12 @@ import { AuthService } from './auth.service';
 import { RegisterUserDto, ResponseUserDto } from '../user/dto';
 import { ResponseProfileDto, SignInDto } from './dto';
 import { JwtAuthGuard } from '../../../shared/src/guards/jwt.auth.guard';
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import { Cookie } from '../../../shared/src/decorators/cookies.decorator';
 import { UserService } from '../user/user.service';
 import { CurrentUser } from '../../../shared/src/decorators/current-user.decorator';
 import { JWTPayload } from '../../../shared/src/interfaces/jwt-payload.interface';
-import { RoleService } from '../role/role.service';
-import { Role } from '../../../shared/src/enums/role.enum';
+import { GoogleGuard } from '../../../shared/src/guards/google.guard';
 
 const REFRESH_TOKEN = 'refresh_token';
 
@@ -27,7 +27,6 @@ export class AuthController {
   constructor(
     private readonly authService: AuthService,
     private readonly userService: UserService,
-    private readonly roleService: RoleService,
   ) {}
 
   @Post('register')
@@ -76,6 +75,16 @@ export class AuthController {
       expires: new Date(),
     });
     res.status(HttpStatus.OK).send(true);
+  }
+
+  @UseGuards(GoogleGuard)
+  @Get('google')
+  googleAuth() {}
+
+  @UseGuards(GoogleGuard)
+  @Get('google/callback')
+  googleAuthCallback(@Req() req: Request) {
+    return req.user;
   }
 
   private setRefreshTokenToCookies(res: Response, dto: ResponseProfileDto) {
